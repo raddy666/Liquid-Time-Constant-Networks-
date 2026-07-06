@@ -6,7 +6,7 @@
 ![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=white)
 ![Status](https://img.shields.io/badge/Result-Negative%2FInstructive-yellow)
 
-📄 **[Read the full paper](./Adapting Liquid Time-Constant Networks for Image Classification: A Comparative Study with Vision Transformers.pdf)** — this README summarizes it; the paper has full derivations, all figures, and the complete reference list.
+📄 **[Read the full paper](./paper.pdf)**
 
 ## TL;DR
 
@@ -83,6 +83,12 @@ All LTC variants use `ncps`' `AutoNCP(128, num_classes)` wiring with the `LTC` c
 
 **The most telling result — per-class accuracy.** Pure LTC scores 61.0% on horses, 60.4% on ships, 44.4% on trucks, but only 2.4% on birds, 2.6% on cats, and 1.4% on dogs. Confusion matrices show it predicting "horse" for 17.7% of airplane images and 44.4% of bird images. CIFAR-10 horses, ships, and trucks tend to share simple, uniform backgrounds (fields/fences, water/sky, roads); birds, cats, and dogs appear in cluttered, varied backgrounds that require recognizing the actual object. This is strong evidence that **Pure LTC is classifying background texture, not objects** — confirmed by t-SNE on the penultimate-layer features, where the Baseline CNN shows clean, separated class clusters and Pure LTC shows near-total class overlap.
 
+![Confusion matrices for Baseline CNN, Pure LTC, and the best hybrid](figures/confusion_matrices.png)
+*Pure LTC (middle) scatters predictions and repeatedly falls back to "horse"; Baseline CNN (left) has a clean diagonal.*
+
+![Per-class accuracy across all five models](figures/per_class_accuracy.png)
+*Pure LTC swings from 61% (horses) to 1.4% (dogs) — a CNN's accuracy is far more even across classes.*
+
 ## Why LTC Fails for Images
 
 Four issues compound:
@@ -128,10 +134,12 @@ Plausibly, but not on static images: video or other genuinely temporal visual da
 ```
 .
 ├── main.py              # Trains all five models sequentially, saves results.json + checkpoints
-├── models.py             # Lightweight pretrained .pth checkpoints
+├── models.py             # All 5 architectures + parameter counting utility
 ├── train.py               # Shared training loop
 ├── evaluate.py           # Test-set evaluation + results table generation
-├── Adapting Liquid Time-Constant Networks for Image Classification: A Comparative Study with Vision Transformers.pdf       # Full write-up (background, derivations, all figures, references)
+├── models/                # Pretrained .pth checkpoints (see Pretrained Models below)
+├── figures/               # Result plots (training curves, confusion matrices, t-SNE)
+├── paper.pdf              # Full write-up (background, derivations, all figures, references)
 ├── requirements.txt
 └── README.md
 ```
@@ -150,8 +158,8 @@ If you only want to train from scratch, you can ignore this folder.
 ## Reproducing This
 
 ```bash
-git clone <your-repo-url>
-cd <your-repo-name>
+git clone https://github.com/raddy666/Liquid-Time-Constant-Networks.git
+cd Liquid-Time-Constant-Networks-
 pip install -r requirements.txt
 
 # Trains all 5 models sequentially, saves results.json + a .pth per model.
@@ -159,7 +167,6 @@ pip install -r requirements.txt
 python main.py
 ```
 **Heads up on runtime**: on the RTX 3060 used for these results, the LTC-based models took 12.5–15.9 hours each — the full run across all five models is ~58 hours combined. To sanity-check the setup first, comment out the LTC entries in `models_config` inside `main.py` and run just the Baseline CNN (~3 minutes).
-*(Update flags/arguments to match your actual `train.py` interface.)*
 
 ## References
 
